@@ -119,6 +119,11 @@ start at the beginning of the document."
   :group 'org-noter
   :type 'boolean)
 
+(defcustom org-noter-save-notes-at-end-of-session nil
+  "Save the notes file when killing a session."
+  :group 'org-noter
+  :type 'boolean)
+
 (defcustom org-noter-prefer-root-as-file-level nil
   "Option to preferentially use the file-level property drawer.
 
@@ -1969,6 +1974,9 @@ want to kill."
             (delete-window window))))
 
       (with-current-buffer notes-buffer
+        (when org-noter-save-notes-at-end-of-session
+          (save-buffer)
+          (setq notes-modified (buffer-modified-p notes-buffer)))
         (remove-hook 'kill-buffer-hook 'org-noter--handle-kill-buffer t)
         (restore-buffer-modified-p nil))
       (when org-noter-use-indirect-buffer
