@@ -98,6 +98,9 @@
      the document to annotate.
 
 *** new (all formats)
+    - ~defcustom org-noter-save-notes-at-end-of-session~ :: Save notes buffer
+      when killing session.  Default value under discussion.
+
     - ~org-noter-start-from-dired~ (Suggested keybinding: ~M-s n~) :: Start
       sessions directly from ~dired~.  Opens all marked files or the file at
       point if none are marked.
