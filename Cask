@@ -6,4 +6,8 @@
 
 (depends-on "with-simulated-input")
 
+(depends-on "flycheck")
+
+(depends-on "elisp-lint")
+
 (depends-on "log4e")

@@ -18,3 +18,7 @@ compile: cask
 .PHONY: test
 test: compile
 	cask exec buttercup -L .
+
+
+lint: cask
+	cask emacs -Q --batch -l elisp-lint.el -f elisp-lint-files-batch *.el
