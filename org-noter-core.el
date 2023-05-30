@@ -4,7 +4,7 @@
 
 ;; Author: Gonçalo Santos (aka. weirdNox@GitHub)
 
-;; Package-Requires: ((emacs "27.2") (org "9.0"))
+;; Package-Requires: ((emacs "27.2") (org "9.4"))
 
 ;; This file is not part of GNU Emacs.
 
