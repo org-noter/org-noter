@@ -266,7 +266,7 @@ DOCUMENT-FILE-NAME is the document filename."
               (setq notes-files-annotating notes-files)
             (with-current-buffer (find-file-noselect (car notes-files))
               (goto-char (point-max))
-              (insert (if (save-excursion (beginning-of-line) (looking-at "[[:space:]]*$")) "" "\n")
+              (insert (if (save-excursion (backward-char) (looking-at-p "\n")) "" "\n")
                       "* " document-base)
               (org-entry-put nil org-noter-property-doc-file
                              (file-relative-name document-used-path
