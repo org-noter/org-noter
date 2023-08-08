@@ -114,6 +114,9 @@ notes file, even if it finds one."
               org-noter-always-create-frame))
            (ast (org-noter--parse-root (vector (current-buffer) document-property)))
            (session-id (get-text-property (org-element-property :begin ast) org-noter--id-text-property))
+           (begin-property (org-element-property :begin ast nil t))
+           (_ (message "begin property: %s" begin-property))
+           (session-id (get-text-property begin-property org-noter--id-text-property))
            session)
 
       ;; Check for prefix value

@@ -850,10 +850,10 @@ be `org-noter--session'."
 (defun org-noter--set-text-properties (ast id)
   (org-with-wide-buffer
    (when ast
-     (let* ((level (or (org-element-property :level ast) 0))
-            (begin (org-element-property :begin ast))
+     (let* ((level (or (org-element-property :level ast nil t) 0))
+            (begin (org-element-property :begin ast nil t))
             (title-begin (+ 1 level begin))
-            (contents-begin (org-element-property :contents-begin ast))
+            (contents-begin (org-element-property :contents-begin ast nil t))
             (properties-end (org-noter--get-properties-end ast t))
             (inhibit-read-only t)
             (modified (buffer-modified-p)))
