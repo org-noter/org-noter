@@ -1524,6 +1524,8 @@ the best heading to serve as a reference to create the new one
 relative to."
   (when view
     (org-noter--with-valid-session
+     (with-current-buffer (org-noter--session-notes-buffer session)
+
      (let ((contents (if (= 0 (org-noter--session-level session))
                          (org-element-contents
                           (org-element-property :parent (org-noter--parse-root)))
@@ -1628,7 +1630,7 @@ relative to."
         :notes (nreverse notes-in-view)
         :regions (nreverse regions-in-view)
         :prev-regions (nreverse closest-notes-regions)
-        :reference-for-insertion reference-for-insertion)))))
+        :reference-for-insertion reference-for-insertion))))))
 
 (defun org-noter--make-view-info-for-single-note (session headline)
   (let ((not-belonging-element
