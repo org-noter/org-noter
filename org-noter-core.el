@@ -358,9 +358,9 @@ With '/', 'The_Title' would become '/The_Title/'."
 
 (defcustom org-noter-focus-doc-after-note-navigation t
   "Focus behavior.
-When non-nil, automatically focus the PDF window after moving
+When non-nil, automatically focus the document window after moving
 between notes. When nil, leave focus in current window."
-  :group 'org-noter
+  :group 'org-noter-navigation
   :type 'boolean)
 
 (defface org-noter-no-notes-exist-face
