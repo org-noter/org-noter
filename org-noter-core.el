@@ -144,11 +144,13 @@ notes that are not annotating the current page."
 
 (defcustom org-noter-always-create-frame t
   "Create a new frame for each document session.
-When non-nil, org-noter will always create a new frame for the
+When 't' (default), org-noter will always create a new frame for the
 session.  When nil, it will use the selected frame if it does not
-belong to any other session."
+belong to any other session. When set to -1, a new frame will never
+be created."
   :group 'org-noter
   :type 'boolean)
+
 
 (defcustom org-noter-disable-narrowing nil
   "Disable narrowing in notes/org buffer."
@@ -691,11 +693,12 @@ Otherwise return the maximum value for point."
            :id (org-noter--get-new-id)
            :display-name display-name
            :frame
-           (if (or org-noter-always-create-frame
+           (if (and (not (eq org-noter-always-create-frame -1))
+                (or org-noter-always-create-frame
                    (catch 'has-session
                      (dolist (test-session org-noter--sessions)
                        (when (eq (org-noter--session-frame test-session) (selected-frame))
-                         (throw 'has-session t)))))
+                         (throw 'has-session t))))))
                (make-frame `((name . ,frame-name) (fullscreen . maximized)))
              (set-frame-parameter nil 'name frame-name)
              (selected-frame))
