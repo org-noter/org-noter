@@ -62,7 +62,9 @@
 
 (defvar org-noter--doc-extensions nil
   "List of extensions handled by org-noter when documents are moved.
-Used by `org-noter--update-doc-rename-in-notes'.  This variable gets filled in by supported modes, so it is not a `defcustom' variable.")
+Used by `org-noter--update-doc-rename-in-notes'.  This variable
+gets filled in by supported modes, so it is not a `defcustom'
+variable.")
 
 (defcustom org-noter-property-doc-file "NOTER_DOCUMENT"
   "Name of the property that specifies the document."
