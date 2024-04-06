@@ -344,14 +344,14 @@ document."
 (defcustom org-noter-headline-title-decoration ""
   "Decoration (emphasis) for the headline title string.
 
-If you use the Org STARTUP option 'entitiespretty', filenames
+If you use the Org STARTUP option \"entitiespretty\", filenames
 with underscores will end up looking ugly.  This string is
 prepended and appended to the document title in the top-level
 headline, making it look nicer.
 
 Reasonable choices are: /, *, =, ~, _
 
-With '/', 'The_Title' would become '/The_Title/'."
+With \"/\", \"The_Title\" would become \"/The_Title/\"."
   :group 'org-noter
   :type 'string
   :version "28.2")
