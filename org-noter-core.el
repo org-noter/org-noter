@@ -1878,7 +1878,7 @@ will continue to sync the document references."
               (setq this-org-file-uses-noter t)
               ;; sync the document path to the new notes file
               (org-set-property org-noter-property-doc-file new-doc-file-rel-path)
-              (next-line)
+              (forward-line)
               ;; add problematic paths to the list
               (when (string-prefix-p "../" new-doc-file-rel-path)
                 (push new-doc-file-rel-path problem-path-list)))))
