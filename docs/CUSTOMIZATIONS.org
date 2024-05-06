@@ -3,6 +3,14 @@
   user-interface features of this fork remain the same those of as the original
   =org-noter=.  However, users may be interested in our variations on the theme
   of Gonçalos Santos.
+
+** Table of Contents :TOC_3:
+- [[#customizations][Customizations]]
+  - [[#peters-mods][Peter's mods]]
+  - [[#dmitrys-mods][Dmitry's mods]]
+  - [[#lamprinos-mods-user][Lamprinos' mods (user)]]
+    - [[#straightel--use-package][straight.el + use-package]]
+
 ** Peter's mods
    In order of frequency, I use precise notes the most, standard notes next and
    no-questions notes the least, so I have bound keys to reflect those
