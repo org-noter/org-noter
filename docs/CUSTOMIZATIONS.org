@@ -8,6 +8,8 @@
 - [[#customizations][Customizations]]
   - [[#peters-mods][Peter's mods]]
   - [[#dmitrys-mods][Dmitry's mods]]
+    - [[#customizing-note-opening-process][Customizing note opening process]]
+    - [[#customizing-the-content-of-precise-notes][Customizing the content of precise notes]]
   - [[#lamprinos-mods-user][Lamprinos' mods (user)]]
     - [[#straightel--use-package][straight.el + use-package]]
 
@@ -58,7 +60,46 @@
 
 ** Dmitry's mods
 
-   [TODO]
+*** Customizing note opening process
+
+By default org-noter likes to store the notes in =Notes.org= file.
+
+Say you want to change that to be dynamically generated, perhaps with =completing-read= of some sort.
+
+Override the =org-noter-create-session-from-document-hook=. The hook will call a function of two arguments, =ARG= and =DOC-PATH=.
+
+=arg= is not used, and =DOC-PATH= is the complete file path to the pdf (document).
+
+This terminates the normal org-noter flow. At this point, org-roam integration generates a new notes file, creates an org-noter heading and reinvokes =(org-noter)=.
+
+See the =org-noter--create-session-from-document-file-supporting-org-roam= in [org-noter-org-roam.el](https://github.com/org-noter/org-noter/blob/master/modules/org-noter-org-roam.el#L45).
+
+
+*** Customizing the content of precise notes
+
+
+When I take precise notes, I like the idea of having the content of the highlight stored below the fold of a heading.
+
+This allows me to paraphrase the headline while preserving the original content in the =QUOTE= block.
+
+This is achieved with an advise:
+
+#+begin_src elisp
+
+    (define-advice org-noter--insert-heading (:after (level title &optional newlines-number location) add-full-body-quote)
+    "Advice for org-noter--insert-heading.
+
+    When inserting a precise note insert the text of the note in the body as an org mode QUOTE block.
+
+    =org-noter-max-short-length= should be set to a large value to short circuit the normal behavior:
+    =(setq org-noter-max-short-length 80000)="
+
+    ;; this tells us it's a precise note that's being invoked.
+    (if (consp location)
+        (insert (format "#+BEGIN_QUOTE\n%s\n#+END_QUOTE" title))))
+
+
+#+end_src
 
 ** Lamprinos' mods (user)
    @chatziiola prefers "notes.org" as his default notes name, vs the default
