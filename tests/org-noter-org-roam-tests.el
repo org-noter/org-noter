@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: t; -*-
+
 (require 'org-noter-test-utils)
 (require 'org-noter-org-roam)
 
@@ -15,7 +17,7 @@
                               (it "can insert a top level heading at the end of the file"
                                   (with-mock-contents
                                    mock-contents-simple-notes-file
-                                   '(lambda ()
+                                   (lambda ()
                                       (org-noter--create-notes-heading "ADOCUMENT" "/tmp/file")
                                       (expect (string-match "ADOCUMENT" (buffer-string))  :not :to-be nil)
                                       (expect (string-match "/tmp/file" (buffer-string))  :not :to-be nil)
@@ -27,7 +29,7 @@
                               (it "can find an existing heading without creating a new one"
                                   (with-mock-contents
                                    mock-contents-simple-notes-file
-                                   '(lambda ()
+                                   (lambda ()
                                       (let* ((found-heading-pos (org-noter--find-create-top-level-heading-for-doc "/tmp/test.pdf" "solove-nothing-to-hide")))
                                       (message "\n00 ----")
                                       (goto-char found-heading-pos)
@@ -44,7 +46,7 @@
                               (it "can create a new heading"
                                   (with-mock-contents
                                    mock-contents-simple-notes-file
-                                   '(lambda ()
+                                   (lambda ()
                                       (expect
                                        ;; org-noter-test-file is defined in test-utils.
                                        (org-noter--find-create-top-level-heading-for-doc "/tmp/some-other-pdf-file.pdf" "SOME HEADING")
@@ -66,7 +68,7 @@
                               (it "can find the top level headline for a specified document and return the position"
                                   (with-mock-contents
                                    mock-contents-simple-notes-file
-                                   '(lambda ()
+                                   (lambda ()
                                       (message "\n11 ----")
                                       (insert "!!")
                                       (message (buffer-string))
@@ -80,7 +82,7 @@
                               (it "return nil for a non existent top level heading"
                                   (with-mock-contents
                                    mock-contents-simple-notes-file
-                                   '(lambda ()
+                                   (lambda ()
                                       (expect
                                        (org-noter--find-top-level-heading-for-document-path "/FAKE/PATH/DOESNT/EXIST")
                                        :to-be nil)
@@ -106,7 +108,7 @@
                         (spy-on 'org-noter)
                         (with-mock-contents
                          mock-contents-simple-notes-file
-                         '(lambda ()
+                         (lambda ()
                             (write-region (point-min) (point-max) "/tmp/pubs/notes.org")))
                         (org-noter--create-session-from-document-file-supporting-org-roam nil "/tmp/pubs/solove-nothing-to-hide.pdf")
                         (expect 'org-noter :to-have-been-called))
