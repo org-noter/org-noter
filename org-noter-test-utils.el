@@ -27,7 +27,7 @@
 (ont--log-enable-logging)
 (ont--log-enable-debugging)
 (ont--log-enable-messaging)
-(ont--log-set-level 'debug)
+(ont--log-set-level 'info)
 (ont--log-debug "ont")
 
 
