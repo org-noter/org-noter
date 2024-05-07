@@ -1,4 +1,4 @@
-
+;;; -*- lexical-binding: t; -*-
 (add-to-list 'load-path "modules")
 
 (describe "org-noter very custom behavior"
@@ -29,7 +29,7 @@
                     (it "should insert the highlighted text as an org-mode QUOTE when advice is enabled."
                         (with-mock-contents
                          mock-contents-simple-notes-file
-                         '(lambda ()
+                         (lambda ()
                             (org-noter-core-test-create-session)
                             ;; we're not specifying the note title
                             (with-simulated-input "RET"
@@ -45,7 +45,7 @@
                     (it "should revert back to standard title"
                         (with-mock-contents
                          mock-contents-simple-notes-file
-                         '(lambda ()
+                         (lambda ()
                             (org-noter-core-test-create-session)
                             (with-simulated-input "RET"
                                                   (org-noter-insert-precise-note))
