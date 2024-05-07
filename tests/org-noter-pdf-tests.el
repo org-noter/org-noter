@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: t; -*-
+
 (add-to-list 'load-path "modules")
 (require 'org-noter-test-utils)
 
@@ -32,7 +34,7 @@
                               (it "can take a precise note WITH a highlight appearing"
                                   (with-mock-contents
                                    mock-contents-simple-notes-file
-                                   '(lambda ()
+                                   (lambda ()
                                       (org-noter-core-test-create-session)
                                       (with-simulated-input "precise SPC note RET"
                                                             (org-noter-insert-precise-note))
