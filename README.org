@@ -1,5 +1,5 @@
 * Org-noter: an interleaving/note-taking package for documents
-  [[https://melpa.org/#/org-noter][file:https://melpa.org/packages/org-noter-badge.svg]] 
+  [[https://melpa.org/#/org-noter][file:https://melpa.org/packages/org-noter-badge.svg]]
   [[https://coveralls.io/github/org-noter/org-noter?branch=master][file:https://coveralls.io/repos/github/org-noter/org-noter/badge.svg?branch=master]]
 
   ~Org-noter~, by [[https://github.com/weirdNox][Gonçalo Santos]], was inspired by the now-orphaned ~Interleave~
@@ -34,6 +34,16 @@
   contributors, but we need code contributions from users of other formats to
   maintain/progress usability with those formats.
 
+
+** Table of Contents                                                    :TOC:
+- [[#org-noter-an-interleavingnote-taking-package-for-documents][Org-noter: an interleaving/note-taking package for documents]]
+  - [[#installation][Installation]]
+  - [[#features][Features]]
+  - [[#usage][Usage]]
+  - [[#customization][Customization]]
+  - [[#keybindings-and-commands][Keybindings and commands]]
+  - [[#changes-to-note-insertion-since-version-141-melpa-version-201910201212][Changes to note insertion since version 1.4.1 (MELPA version 20191020.1212)]]
+- [[#acknowledgments][Acknowledgments]]
 
 ** Installation
 *** vanilla
@@ -217,6 +227,9 @@ permanent, or revert to the default):
 - ~org-noter-set-closest-tipping-point~ will set the closest note tipping point. Also
   check the docstring of the variable ~org-noter-closest-tipping-point~ in order to better
   understand the tipping point.
+
+- [[https://www.orgroam.com/][org-roam ]]integration: run ~(org-noter-enable-org-roam-integration)~ after loading org-noter.
+
 
 ** Keybindings and commands
    :PROPERTIES:

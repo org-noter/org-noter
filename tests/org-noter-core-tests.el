@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 (add-to-list 'load-path "modules")
 (require 'with-simulated-input)
 (require 'org-noter-test-utils)
@@ -15,14 +16,14 @@
                     (it "can parse a note file ast that is not empty"
                         (with-mock-contents
                          mock-contents-simple-notes-file
-                         '(lambda () (let ((mock-ast (org-noter--parse-root)))
+                         (lambda () (let ((mock-ast (org-noter--parse-root)))
                                            (expect mock-ast :not :to-be nil)))))
 
                     ;; basic note should insert a default heading
                     (it "can take a basic note"
                         (with-mock-contents
                          mock-contents-simple-notes-file
-                         '(lambda ()
+                         (lambda ()
                             (org-noter-core-test-create-session)
                             (let ((org-noter-insert-note-no-questions t))
                               (org-noter-insert-note nil "NEW NOTE"))
@@ -33,7 +34,7 @@
                     (it "can take a precise note"
                         (with-mock-contents
                          mock-contents-simple-notes-file
-                         '(lambda ()
+                         (lambda ()
                             (org-noter-core-test-create-session)
                             (with-simulated-input "precise SPC note RET"
                                                   (org-noter-insert-precise-note))
@@ -43,7 +44,7 @@
                     (it "precise note has precise data"
                         (with-mock-contents
                          mock-contents-simple-notes-file
-                         '(lambda ()
+                         (lambda ()
                             (org-noter-core-test-create-session)
                             (with-simulated-input "precise SPC note RET"
                                                   (org-noter-insert-precise-note))
@@ -56,7 +57,7 @@
                     (it "precise note calls the highlight hook"
                         (with-mock-contents
                          mock-contents-simple-notes-file
-                         '(lambda ()
+                         (lambda ()
                             (org-noter-core-test-create-session)
                             (with-simulated-input "precise SPC note RET"
                                                   (org-noter-insert-precise-note))
@@ -66,7 +67,7 @@
                     (it "precise note DOES NOT call the highlight hook when the note is aborted"
                         (with-mock-contents
                          mock-contents-simple-notes-file
-                         '(lambda ()
+                         (lambda ()
                             (org-noter-core-test-create-session)
                             ;; this is how you trap a C-g
                             (condition-case nil
@@ -83,7 +84,7 @@
                     (it "narrowed buffer is named correctly"
                         (with-mock-contents
                          mock-contents-simple-notes-file-with-a-single-note
-                         '(lambda ()
+                         (lambda ()
                             (org-noter-core-test-create-session)
                             (let* ((session org-noter--session))
                               (expect (buffer-name (org-noter--session-notes-buffer session)) :to-equal "Notes of solove-nothing-to-hide")
@@ -93,7 +94,7 @@
                     (it "session properties are set correctly"
                         (with-mock-contents
                          mock-contents-simple-notes-file-with-a-single-note
-                         '(lambda ()
+                         (lambda ()
                             (org-noter-core-test-create-session)
                             (let* ((session org-noter--session))
                               (expect (org-noter--session-property-text session) :to-equal "pubs/solove-nothing-to-hide.pdf")
@@ -113,7 +114,7 @@
                     (it "can get view info"
                         (with-mock-contents
                          mock-contents-simple-notes-file-with-a-single-note
-                         '(lambda ()
+                         (lambda ()
                             (org-noter-core-test-create-session)
                             (let* ((view-info (org-noter--get-view-info (org-noter--get-current-view))))
                               (expect 'org-noter-core-test-get-current-view :to-have-been-called)
@@ -174,7 +175,7 @@
                               (it "can take a precise note without a highlight appearing"
                                   (with-mock-contents
                                    mock-contents-simple-notes-file
-                                   '(lambda ()
+                                   (lambda ()
                                       (org-noter-core-test-create-session)
                                       (with-simulated-input "precise SPC note RET"
                                                             (org-noter-insert-precise-note))
@@ -191,7 +192,7 @@
                               (it "can take a precise note WITH a highlight appearing"
                                   (with-mock-contents
                                    mock-contents-simple-notes-file
-                                   '(lambda ()
+                                   (lambda ()
                                       (org-noter-core-test-create-session)
                                       (with-simulated-input "precise SPC note RET"
                                                             (org-noter-insert-precise-note))
@@ -206,7 +207,7 @@
                     (it "can start org-noter with `org-noter` call"
                         (with-mock-contents
                          mock-contents-simple-notes-file
-                         '(lambda ()
+                         (lambda ()
                             ;; move to the heading where we're going to invoke org-noter
                             (search-forward "nothing-to-hide")
                             (org-noter))))

@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: t; -*-
+
 (add-to-list 'load-path "modules")
 (require 'org-noter-test-utils)
 
@@ -41,7 +43,7 @@ Test
                               (it "can parse a page location"
                                   (with-mock-contents
                                    mock-contents-simple-notes-file-with-locations
-                                   '(lambda ()
+                                   (lambda ()
                                       (org-noter-core-test-create-session)
                                       (search-forward "Heading2")
                                       (expect (org-noter--get-containing-heading) :not :to-be nil)

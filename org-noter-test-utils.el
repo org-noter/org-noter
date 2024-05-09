@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 ;; we need to load undecover before all the other org-noter modules so that undercover can instrument code to generate test coverage.
 (when (require 'undercover nil t)
   (setq undercover-force-coverage t)
@@ -88,7 +89,9 @@
     (find-file tempfile)
     (org-mode)
     (ont--log-debug "Starting the test..")
+    (ont--log-debug "Buffer contents below:")
     (ont--log-debug "%s" (buffer-string))
+    (ont--log-debug "Invoking lambda")
     (funcall lambda)
     (ont--log-debug "About to kill buffer..")
     (kill-current-buffer)
