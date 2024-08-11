@@ -26,7 +26,30 @@
 (require 'cl-lib)
 (require 'org-roam-node)
 
-(defun org-noter--get-filename-for-org-roam-node ()
+
+(defun org-noter--get-nodes-with-noter-document-property (doc-path)
+  "Search for all org-roam nodes that have a NOTER_DOCUMENT property matching DOC-PATH"
+  (message "org-noter--get-nodes-with-noter-document-property")
+  (let ((search_statement (format "%%NOTER_DOCUMENT%%%s%%" doc-path)))
+    (message "Search statement: %s" search_statement)
+  (org-roam-db-query
+   [:select [properties]
+            :from nodes
+            :where (like properties $r1)
+            :limit 10
+            ] search_statement
+   )))
+
+(defun org-noter--find-existing-node-for-document (doc-path)
+  "Find an org-roam node whose :NOTER_DOCUMENT: matches the document we are trying to open.
+Returns the path to the notes file."
+  (let* ((matches (org-noter--get-nodes-with-noter-document-property doc-path)))
+    (message (format "Nodes matching (path=%s): %s" doc-path (length matches)))
+    (mapcar '(lambda (row)
+               (cdr (assoc "FILE" (car row))))
+            matches)))
+
+(defun org-noter--get-filename-interactively ()
   "Use org-roam to specify a node."
   (let* ((templates (list (append (car org-roam-capture-templates) '(:immediate-finish t))))
          (node (org-roam-node-read))
@@ -55,7 +78,11 @@ Alternatively, you can call the `org-noter-enable-org-roam-integration'.
 
 ARG is not current used but here for compatibility reasons.
 DOC-PATH is the path to the document (pdf)."
-  (let* ((file-path-for-org-roam-node (org-noter--get-filename-for-org-roam-node))
+
+  ;; check if a node for specified pdf path already exists
+  ;; if it doesn't ask the user to specify one using typical org-roam-find
+  (let* ((file-path-for-org-roam-node (or (car (org-noter--find-existing-node-for-document doc-path))
+                                          (org-noter--get-filename-interactively)))
          (_ (message "[d] opening up notes: %s doc: %s" file-path-for-org-roam-node doc-path))
          ;; create or find a top level heading for the document and return it
          (top-level-heading-for-doc-position (with-current-buffer (find-file-noselect file-path-for-org-roam-node)
