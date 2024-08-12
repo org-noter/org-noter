@@ -10,11 +10,10 @@ cask: $(CASK_DIR)
 
 .PHONY: compile
 compile: cask
-	! (cask eval "(let ((byte-compile-error-on-warn f)) \
-	                 (cask-cli/build))" 2>&1 \
-	   | egrep -a "(Warning|Error):") ; \
-	  (ret=$$? ; cask clean-elc && exit $$ret)
-
+	cask emacs -batch -L . -L test \
+	--eval "(setq byte-compile-error-on-warn t)" \
+	-f batch-byte-compile $$(cask files); \
+	(ret=$$? ; cask clean-elc && exit $$ret)
 .PHONY: test
 test: compile
 	cask exec buttercup -L .
