@@ -89,8 +89,8 @@ DOC-PATH is the path to the document (pdf)."
                                                (org-noter--find-create-top-level-heading-for-doc doc-path (file-name-base doc-path)))))
     (message "going to pos: %s" top-level-heading-for-doc-position)
     (with-current-buffer (find-file-noselect file-path-for-org-roam-node)
-    (goto-char top-level-heading-for-doc-position)
-    (org-noter))))
+      (goto-char top-level-heading-for-doc-position)
+      (org-noter))))
 
 
 
