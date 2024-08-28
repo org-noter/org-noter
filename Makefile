@@ -14,6 +14,9 @@ compile: cask
 	--eval "(setq byte-compile-error-on-warn t)" \
 	-f batch-byte-compile $$(cask files); \
 	(ret=$$? ; cask clean-elc && exit $$ret)
-.PHONY: test
-test: compile
+.PHONY: test coverage
+test:
 	cask exec buttercup -L .
+
+coverage: test
+	genhtml -o coverage/ coverage/lcov.info

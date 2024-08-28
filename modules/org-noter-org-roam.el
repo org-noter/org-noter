@@ -45,7 +45,7 @@
 Returns the path to the notes file."
   (let* ((matches (org-noter--get-nodes-with-noter-document-property doc-path)))
     (message (format "Nodes matching (path=%s): %s" doc-path (length matches)))
-    (mapcar '(lambda (row)
+    (mapcar #'(lambda (row)
                (cdr (assoc "FILE" (car row))))
             matches)))
 
