@@ -1,6 +1,6 @@
 ;;; -*- lexical-binding: t; -*-
 
-(require 'org-noter-test-utils)
+(load-file "org-noter-test-utils.el")
 (require 'org-noter-org-roam)
 
 (describe "org-roam integration"

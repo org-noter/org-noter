@@ -1,7 +1,7 @@
 ;;; -*- lexical-binding: t; -*-
 (add-to-list 'load-path "modules")
 (require 'with-simulated-input)
-(require 'org-noter-test-utils)
+(load-file "org-noter-test-utils.el")
 
 
 (describe "org-noter-core"

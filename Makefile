@@ -16,6 +16,7 @@ compile: cask
 	(ret=$$? ; cask clean-elc && exit $$ret)
 .PHONY: test coverage
 test:
+	rm -rf coverage
 	cask exec buttercup -L .
 
 coverage: test

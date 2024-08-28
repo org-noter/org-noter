@@ -1,7 +1,6 @@
 ;;; -*- lexical-binding: t; -*-
-
 (add-to-list 'load-path "modules")
-(require 'org-noter-test-utils)
+(load-file "org-noter-test-utils.el")
 
 
 (defvar expected-highlight-info (make-pdf-highlight :page 747 :coords '(0.1 0.2 0.3 0.4)))

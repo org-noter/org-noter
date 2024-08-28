@@ -174,8 +174,3 @@ org-noter-core-test-return-text
   (add-to-list 'org-noter--add-highlight-hook  #'org-noter-core-test-add-highlight)
   (add-to-list 'org-noter--get-highlight-location-hook #'org-noter-core-test-get-highlight-location)
   )
-
-
-
-
-(provide 'org-noter-test-utils)
