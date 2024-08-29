@@ -312,7 +312,7 @@ marked file."
 (defun org-noter-enable-org-roam-integration ()
   "Enable org-roam integration."
   (interactive)
-  (load "org-noter-org-roam")
+  (require 'org-noter-org-roam)
   (setq org-noter-create-session-from-document-hook
       '(org-noter--create-session-from-document-file-supporting-org-roam)))
 
