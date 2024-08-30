@@ -135,6 +135,7 @@ NOTER_DOCUMENT property.  Return the point where the heading was inserted."
           "* " notes-heading )
   (org-entry-put nil org-noter-property-doc-file
                  (expand-file-name document-path))
+  (org-id-get-create)
   (point))
 
 
