@@ -30,6 +30,11 @@
   (condition-case nil
       (require 'org-roam-node)
     (error (message "`org-roam-node is not found. org-noter's org-roam support requires org-roam to be installed. Please install org-roam."))))
+;; run time warning
+(condition-case nil
+    (require 'org-roam-node)
+  (error (message "`org-roam-node is not found. org-noter's org-roam support requires org-roam to be installed. Please install org-roam.")))
+
 
 
 
