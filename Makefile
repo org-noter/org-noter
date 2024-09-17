@@ -33,7 +33,8 @@ current-version:
 # Target to bump the patch version
 bump-patch:
 	@NEW_VERSION=$$(svu patch); \
-	sed -i.bak -E "s/^;; Version:.*/;; Version: $$NEW_VERSION/" $(TARGET_FILE); \
+	NEW_EMACS_VERSION=$$(echo $$NEW_VERSION | sed 's/^v//'); \
+	sed -i.bak -E "s/^;; Version:.*/;; Version: $$NEW_EMACS_VERSION/" $(TARGET_FILE); \
 	echo "New Patch Version: $$NEW_VERSION"; \
 	git add $(TARGET_FILE); \
 	git commit -m "Bump patch version to $$NEW_VERSION"; \
@@ -44,7 +45,8 @@ bump-patch:
 # Target to bump the minor version
 bump-minor:
 	@NEW_VERSION=$$(svu minor); \
-	sed -i.bak -E "s/^;; Version:.*/;; Version: $$NEW_VERSION/" $(TARGET_FILE); \
+	NEW_EMACS_VERSION=$$(echo $$NEW_VERSION | sed 's/^v//'); \
+	sed -i.bak -E "s/^;; Version:.*/;; Version: $$NEW_EMACS_VERSION/" $(TARGET_FILE); \
 	echo "New Patch Version: $$NEW_VERSION"; \
 	git add $(TARGET_FILE); \
 	git commit -m "Bump minor version to $$NEW_VERSION"; \
