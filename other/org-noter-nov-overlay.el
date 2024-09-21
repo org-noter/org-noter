@@ -26,6 +26,7 @@
 (require 'org-noter)
 (require 'nov)
 (require 'seq)
+(require 'color)
 
 (defcustom org-noter-nov-overlay-color-property "NOTER_OVERLAY"
   "A property that specifies the overlay color for `org-noter-nov-make-ov'.")
