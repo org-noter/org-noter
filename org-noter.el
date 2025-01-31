@@ -182,7 +182,7 @@ DOCUMENT-FILE-NAME is the document filename."
              (document-used-path (expand-file-name document-name document-directory))
 
              (search-names (remove nil (append org-noter-default-notes-file-names
-                                       (list (concat document-base ".org"))
+                                       (list (concat document-base org-noter-file-extension))
                                        (list (run-hook-with-args-until-success 'org-noter-find-additional-notes-functions document-path)))))
              notes-files-annotating ; List of files annotating document
              notes-files ; List of found notes files (annotating or not)
