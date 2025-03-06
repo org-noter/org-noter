@@ -12,7 +12,7 @@ jobs:
           architecture: 'x64'
       - uses: purcell/setup-emacs@master
         with:
-          version: '28.2'
+          version: '30'
 
       - uses: conao3/setup-cask@master
         with:
@@ -25,16 +25,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y sqlite3 libsqlite3-dev gcc build-essential git
-
-      - name: Diagnose EmacSQL
-        run: |
-          cask exec emacs -Q --batch \
-            --eval "(require 'emacsql)" \
-            --eval "(message \"EmacSQL version: %s\" (if (boundp 'emacsql-version) emacsql-version \"unknown\"))" \
-            --eval "(message \"Available functions: %s\" (apropos-internal \"^emacsql.*binary\\|^emacsql.*compile\" 'functionp))" \
-            --eval "(require 'emacsql-sqlite)" \
-            --eval "(message \"SQLite functions: %s\" (apropos-internal \"^emacsql-sqlite.*binary\\|^emacsql-sqlite.*compile\" 'functionp))" \
-            --eval "(emacsql-sqlite-ensure-binary)"
 
       - name: Run tests
         run: cask exec buttercup -L .

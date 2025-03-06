@@ -10,3 +10,5 @@
 (depends-on "undercover")
 
 (depends-on "org-roam")
+
+(depends-on "emacsql")
