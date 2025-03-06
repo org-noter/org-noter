@@ -34,7 +34,7 @@ jobs:
             --eval "(message \"Available functions: %s\" (apropos-internal \"^emacsql.*binary\\|^emacsql.*compile\" 'functionp))" \
             --eval "(require 'emacsql-sqlite)" \
             --eval "(message \"SQLite functions: %s\" (apropos-internal \"^emacsql-sqlite.*binary\\|^emacsql-sqlite.*compile\" 'functionp))" \
-            ---eval "(emacsql-sqlite-ensure-binary)"
+            --eval "(emacsql-sqlite-ensure-binary)"
 
       - name: Run tests
         run: cask exec buttercup -L .
