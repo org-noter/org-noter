@@ -2,6 +2,7 @@ on: push
 
 jobs:
   build:
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -27,7 +28,7 @@ jobs:
 
       - name: Compile EmacSQL SQLite module
         run: |
-          cask exec emacs -Q --batch --eval "(require 'emacsql)" --eval "(emacsql-sqlite-compile-module)"
+          cask exec emacs -Q --batch --eval "(require 'emacsql-sqlite)" --eval "(emacsql-sqlite-ensure-binary)"
 
       - name: Run tests
         run: cask exec buttercup -L .
