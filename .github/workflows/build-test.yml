@@ -20,6 +20,11 @@ jobs:
       - name: Install dependencies
         run: cask
 
+      - name: Install dependencies for EmacSQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sqlite3 libsqlite3-dev gcc
+
       - name: Run tests
         run: cask exec buttercup -L .
 
