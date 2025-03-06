@@ -33,7 +33,7 @@ jobs:
             --eval "(message \"EmacSQL version: %s\" (if (boundp 'emacsql-version) emacsql-version \"unknown\"))" \
             --eval "(message \"Available functions: %s\" (apropos-internal \"^emacsql.*binary\\|^emacsql.*compile\" 'functionp))" \
             --eval "(require 'emacsql-sqlite)" \
-            --eval "(message \"SQLite functions: %s\" (apropos-internal \"^emacsql-sqlite.*binary\\|^emacsql-sqlite.*compile\" 'functionp))"
+            --eval "(message \"SQLite functions: %s\" (apropos-internal \"^emacsql-sqlite.*binary\\|^emacsql-sqlite.*compile\" 'functionp))" \
             ---eval "(emacsql-sqlite-ensure-binary)"
 
       - name: Run tests
