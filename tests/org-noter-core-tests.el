@@ -9,6 +9,13 @@
            (create-org-noter-test-session)
            )
 
+
+
+
+          (describe "org-mode version"
+                    (it "can get the org-mode version"
+                        (expect (org-version) :to-equal "9.7.11"))
+                    )
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           (describe "note taking functionality"
@@ -87,7 +94,7 @@
                          (lambda ()
                             (org-noter-core-test-create-session)
                             (let* ((session org-noter--session))
-                              (expect (buffer-name (org-noter--session-notes-buffer session)) :to-equal "Notes of solove-nothing-to-hide")
+                              (expect (buffer-name (org-noter--session-notes-buffer session)) :to-equal "Notes of solove-nothing-to-hide.pdf")
                               ))))
 
                     ;; check that session properties are set correctly
@@ -98,7 +105,7 @@
                             (org-noter-core-test-create-session)
                             (let* ((session org-noter--session))
                               (expect (org-noter--session-property-text session) :to-equal "pubs/solove-nothing-to-hide.pdf")
-                              (expect (org-noter--session-display-name session) :to-equal "solove-nothing-to-hide")
+                              (expect (org-noter--session-display-name session) :to-equal "solove-nothing-to-hide.pdf")
                               (expect (org-noter--session-notes-file-path session) :to-equal org-noter-test-file)
                               (expect (buffer-file-name (org-noter--session-notes-buffer session)) :to-equal org-noter-test-file)
                               ;; TODO: Need test-specific-major mode somehow?

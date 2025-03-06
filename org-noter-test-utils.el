@@ -32,8 +32,7 @@
 
 
 (defvar mock-contents-simple-notes-file
-  "
-:PROPERTIES:
+  ":PROPERTIES:
 :ID:       FAKE_1
 :END:
 #+TITLE: Test book notes (simple)
