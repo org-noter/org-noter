@@ -33,7 +33,7 @@
                                       (let* ((found-heading-pos (org-noter--find-create-top-level-heading-for-doc "/tmp/test.pdf" "solove-nothing-to-hide")))
                                       (goto-char found-heading-pos)
                                       (insert "!!")
-                                      (expect found-heading-pos :to-be 141)))))
+                                      (expect found-heading-pos :to-be 140)))))
 
 
                               (it "can create a new heading"
@@ -43,7 +43,7 @@
                                       (expect
                                        ;; org-noter-test-file is defined in test-utils.
                                        (org-noter--find-create-top-level-heading-for-doc "/tmp/some-other-pdf-file.pdf" "SOME HEADING")
-                                       :to-be 162))))
+                                       :to-be 161))))
                               )
 
 
@@ -60,7 +60,7 @@
                                       (insert "!!")
                                       (expect
                                        (org-noter--find-top-level-heading-for-document-path "/tmp/test.pdf")
-                                       :to-be 143))))
+                                       :to-be 142))))
 
 
                               (it "return nil for a non existent top level heading"
