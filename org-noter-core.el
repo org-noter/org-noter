@@ -60,6 +60,11 @@
   :group 'org-noter
   :type '(repeat symbol))
 
+(defcustom org-noter-file-extension ".org"
+  "Extension of notes file."
+  :group 'org-noter
+  :type 'string)
+
 (defvar org-noter--doc-extensions nil
   "List of extensions handled by org-noter when documents are moved.
 Used by `org-noter--update-doc-rename-in-notes'.  This variable
@@ -1786,7 +1791,7 @@ file."
            (document-directory (file-name-directory document-path))
 
            (search-names (remove nil (append org-noter-default-notes-file-names
-                                             (list (concat document-base ".org"))
+                                             (list (concat document-base org-noter-file-extension))
                                              (list (run-hook-with-args-until-success 'org-noter-find-additional-notes-functions document-path)))))
            notes-files ; list of notes files with promising names (Notes.org or <docname>.org)
            notes-path) ; junk variable when iterating over notes-files
