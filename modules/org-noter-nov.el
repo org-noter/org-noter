@@ -191,7 +191,7 @@
                                        (nov-url-filename-and-target url))
                                 (when (not (integerp nov-documents-index))
                                   (setq nov-documents-index 0))
-                                (list nov-documents-index (point)))))
+                                (cons nov-documents-index (point)))))
                (push (vector title location relative-level) output-data)))
            (push (vector "Skeleton" (list 0) 1) output-data)
 
