@@ -606,39 +606,55 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
   "Open a PDF link, handling the custom (page v . h [edges]) format."
   (let* ((parts (split-string link "::"))
          (path (car parts))
-         (option (cadr parts)))
-    (if (and option
-             (string-match "^(\\([0-9]+\\)[[:space:]]+\\([0-9.]+\\)[[:space:]]*\\.[[:space:]]*\\([0-9.]+\\)\\(?:[[:space:]]+\\([0-9. ]+\\)\\)?)$" option))
-        (progn
-          (let* ((clean-path (expand-file-name path))
-                 (buf (find-file-noselect clean-path))
-                 (win (get-buffer-window buf)))
-            (if win
-                (select-window win)
-              (switch-to-buffer-other-window buf)))
+         (option (cadr parts))
+         (precise (and option
+                       (string-match
+                        "^(\\([0-9]+\\)[[:space:]]+\\([0-9.]+\\)[[:space:]]*\\.[[:space:]]*\\([0-9.]+\\)\\(?:[[:space:]]+\\([0-9. ]+\\)\\)?)$"
+                        option)))
+         (page (cond
+                (precise (string-to-number (match-string 1 option)))
+                ((and option (string-match-p "^[0-9]+$" option))
+                 (string-to-number option))
+                (t nil)))
+         (v (when precise (string-to-number (match-string 2 option))))
+         (h (when precise (string-to-number (match-string 3 option))))
+         (edges-str (when precise (match-string 4 option)))
+         (edges (when edges-str
+                  (let ((nums (mapcar #'string-to-number (split-string edges-str)))
+                        result)
+                    (while nums
+                      (push (list (pop nums) (pop nums) (pop nums) (pop nums)) result))
+                    (nreverse result)))))
 
-          (let ((page (string-to-number (match-string 1 option)))
-                (v (string-to-number (match-string 2 option)))
-                (h (string-to-number (match-string 3 option)))
-                (edges-str (match-string 4 option))
-                edges)
+    (let ((doc-window (and (boundp 'org-noter--session)
+                           org-noter--session
+                           (org-noter--get-doc-window))))
+      (if doc-window
+          (progn
+            (let ((location (if (and page v h)
+                                (cons page (cons v h))
+                              (when page (cons page 0)))))
+              (when location
+                (org-noter--doc-goto-location location)))
 
-            ;; Parse edges string if present
-            (when edges-str
-              (let ((nums (mapcar #'string-to-number (split-string edges-str))))
-                ;; Group flat list into list of lists (regions of 4 coordinates)
-                (while nums
-                  (push (list (pop nums) (pop nums) (pop nums) (pop nums)) edges))
-                (setq edges (nreverse edges))))
+            (select-frame-set-input-focus (window-frame doc-window))
+            (select-window doc-window)
 
-            (org-noter-goto-precise-link-location page v h edges)))
+            (when (and edges page)
+              (pdf-view-display-region (cons page edges))))
 
-      ;; fallback
-      (if (fboundp 'org-pdftools-open)
-          (org-pdftools-open link)
-        (find-file path)
-        (when (and option (string-match-p "^[0-9]+$" option))
-          (pdf-view-goto-page (string-to-number option)))))))
+        ;; fallback
+        (let* ((clean-path (expand-file-name path))
+               (buf (find-file-noselect clean-path))
+               (win (get-buffer-window buf)))
+          (if win
+              (select-window win)
+            (switch-to-buffer-other-window buf))
+
+          (when page
+            (if (and v h)
+                (org-noter-goto-precise-link-location page v h edges)
+              (pdf-view-goto-page page))))))))
 
 (defun org-noter-pdf-link-export (link description format)
   "Export the custom PDF LINK with DESCRIPTION for FORMAT.
