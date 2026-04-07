@@ -141,15 +141,7 @@ original pretty-print function."
   (when (eq mode 'pdf-view-mode)
     (let (v-position h-position)
       (if (and (pdf-view-active-region-p)
-               ;; Guard to ensure the edges are actually populated. This is
-               ;; to prevent an error which happens if the user triggers
-               ;; ~org-noter-insert-precise-note~ without highlighting anything
-               (let ((edges (cadr (pdf-view-active-region))))
-                 (and edges
-                      (nth 0 edges)
-                      (nth 1 edges)
-                      (nth 2 edges)
-                      (nth 3 edges))))
+	       (cadr (pdf-view-active-region))) ; ensure the edges are ACTUALLY populated (needed for pdf-tools v1.3.0)
           (let ((edges (cadr (pdf-view-active-region))))
             (setq v-position (min (nth 1 edges) (nth 3 edges))
                   h-position (min (nth 0 edges) (nth 2 edges))))
