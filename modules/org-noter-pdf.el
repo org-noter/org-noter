@@ -515,6 +515,9 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
            (page (if has-region
                      (pdf-highlight-page highlight)
                    (pdf-view-current-page)))
+           ;; Detect if this is a rectangle selection
+           (is-rectangle (and has-region
+                              (bound-and-true-p pdf-view--have-rectangle-region)))
            ;; Determine effective mode based on config and prefix arg
            (mode (if current-prefix-arg
                      (if org-noter-store-link-markup-annotation nil t)
@@ -534,14 +537,18 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
                                              (mapconcat (lambda (r)
                                                           (mapconcat (lambda (n) (format "%.3f" n)) r " "))
                                                         (cdr coords) " ")
-                                           nil)))
+                                           nil))
+                              ;; Add a "rect:" prefix to edges if rectangle
+                              (edges-str (when edges-str
+                                           (if is-rectangle
+                                               (concat "rect:" edges-str)
+                                             edges-str))))
                          (if edges-str
-                             ;; Store edges in link if `org-noter-store-link-markup-annotation' 'flash or 't mode
                              (format "pdf:%s::(%d %.3f . %.3f %s)" file-path page v h edges-str)
                            (format "pdf:%s::(%d %.3f . %.3f)" file-path page v h)))
                      (format "pdf:%s::%d" file-path page)))
-             ;; Get selected text if available
-             (raw-text (when has-region
+             ;; For rectangle selections, don't use the text as description
+             (raw-text (when (and has-region (not is-rectangle))
                          (mapconcat #'identity (pdf-view-active-region-text) " ")))
              (clean-text (when raw-text
                            (string-trim (replace-regexp-in-string "[[:space:]\n\r]+" " " raw-text))))
@@ -554,9 +561,12 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
                               (replace-regexp-in-string (regexp-quote "$p$")
                                                         (number-to-string page)
                                                         template t t)))
-             (description (if (and clean-text (<= (length clean-text) max-len))
-                              clean-text
-                            default-title)))
+             (description (cond
+                           (is-rectangle
+                            (format "Rectangle on page %d" page))
+                           ((and clean-text (<= (length clean-text) max-len))
+                            clean-text)
+                           (t default-title))))
 
         (org-link-store-props
          :type "pdf"
@@ -568,8 +578,9 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
 ;; Scroll vertically only
   ;; NOTE(hnvy): Unsure if a horizontal scroll would also be useful? Doesn't seem
   ;; to be present in the default behaviour.
-(defun org-noter-goto-precise-link-location (page v h &optional edges)
-  "Go to PAGE, scroll to relative coordinate V, and flash matching annotation or EDGES."
+(defun org-noter-goto-precise-link-location (page v h &optional edges is-rectangle)
+  "Go to PAGE, scroll to relative coordinate V, and flash matching annotation or EDGES.
+If IS-RECTANGLE is non-nil, display the region as a rectangle."
   (when (and org-noter--arrow-location
              (vectorp org-noter--arrow-location)
              (> (length org-noter--arrow-location) 0)
@@ -579,8 +590,9 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
   (org-noter-pdf--goto-location 'pdf-view-mode (cons page (cons v h)) (selected-window))
 
   (if edges
-      ;; If our link contains explicit edges (i.e., if we had set `org-noter-store-link-markup-annotation' to 'flash OR t)
-      (pdf-view-display-region (cons page edges))
+      ;; If our link contains explicit edges (i.e., if we had set `org-noter-store-link-markup-annotation' to 'flash OR t).
+      ;; Also check if our link is a rectangle
+      (pdf-view-display-region (cons page edges) is-rectangle)
 
     ;; What to do if there are no edges
     (let ((annots (pdf-info-getannots page)))
@@ -592,7 +604,6 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
               ;; Ensure edges is a list of regions
               (when (numberp (car annot-edges))
                 (setq annot-edges (list annot-edges)))
-
               (dolist (r annot-edges)
                 (when (and (>= (+ h 0.01) (nth 0 r))
                            (<= (- h 0.01) (nth 2 r))
@@ -609,7 +620,7 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
          (option (cadr parts))
          (precise (and option
                        (string-match
-                        "^(\\([0-9]+\\)[[:space:]]+\\([0-9.]+\\)[[:space:]]*\\.[[:space:]]*\\([0-9.]+\\)\\(?:[[:space:]]+\\([0-9. ]+\\)\\)?)$"
+                        "^(\\([0-9]+\\)[[:space:]]+\\([0-9.]+\\)[[:space:]]*\\.[[:space:]]*\\([0-9.]+\\)\\(?:[[:space:]]+\\(\\(?:rect:\\)?[0-9. ]+\\)\\)?)$"
                         option)))
          (page (cond
                 (precise (string-to-number (match-string 1 option)))
@@ -618,7 +629,13 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
                 (t nil)))
          (v (when precise (string-to-number (match-string 2 option))))
          (h (when precise (string-to-number (match-string 3 option))))
-         (edges-str (when precise (match-string 4 option)))
+         (raw-edges-str (when precise (match-string 4 option)))
+         ;; Detect rectangle flag
+         (is-rectangle (and raw-edges-str (string-prefix-p "rect:" raw-edges-str)))
+         (edges-str (when raw-edges-str
+                      (if is-rectangle
+                          (substring raw-edges-str 5) ; strip "rect:"
+                        raw-edges-str)))
          (edges (when edges-str
                   (let ((nums (mapcar #'string-to-number (split-string edges-str)))
                         result)
@@ -641,7 +658,7 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
             (select-window doc-window)
 
             (when (and edges page)
-              (pdf-view-display-region (cons page edges))))
+              (pdf-view-display-region (cons page edges) is-rectangle)))
 
         ;; fallback
         (let* ((clean-path (expand-file-name path))
@@ -653,7 +670,7 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
 
           (when page
             (if (and v h)
-                (org-noter-goto-precise-link-location page v h edges)
+                (org-noter-goto-precise-link-location page v h edges is-rectangle)
               (pdf-view-goto-page page))))))))
 
 (defun org-noter-pdf-link-export (link description format)
