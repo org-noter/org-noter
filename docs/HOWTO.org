@@ -87,16 +87,15 @@
    :END:
 #+end_example
 
-
 ** In-text linking and highlighting to a specific PDF region
 Everything revolves around one customizable variable ~org-noter-store-link-markup-annotation~.
 
 It accepts *three* values:
-| Value   | PDF Modified? | Region Stored in Link? | On Open Behaviour         |
-|---------+---------------+------------------------+---------------------------|
-| =t=     | YES           | YES                    | Flashes the saved region  |
-| ='flash= | NO            | YES                    | Flashes the saved region  |
-| =nil=   | NO            | NO                     | Goes to page/location only|
+| Value  | PDF Modified? | Region Stored in Link? | On Open Behaviour          |
+|--------+---------------+------------------------+----------------------------|
+| =t=      | YES           | YES                    | Flashes the saved region   |
+| ='flash= | NO            | YES                    | Flashes the saved region   |
+| =nil=    | NO            | NO                     | Goes to page/location only |
 
 Choose your preferred default by adding ONE of these to your config:
 #+BEGIN_SRC emacs-lisp
@@ -111,7 +110,8 @@ Choose your preferred default by adding ONE of these to your config:
 #+END_SRC
 
 *** How to use
-- Highlight a piece of text
+- Highlight a piece of text (you can also make a rectangular
+  region by holding the ~META~ key and dragging)
 - Press ~C-c l~
 - Come back to your notes file and press ~C-c C-l~ to paste it
 
@@ -125,5 +125,5 @@ Use a *prefix argument* (ie ~C-u C-c l~) when storing the link:
 | ='flash=          | =nil= (nothing)       |
 | =nil= (nothing)   | =t= (annotate)        |
 
-This is handy when you usually want flashing but occasionally need
-a permanent annotation (or vice versa).
+This is handy when you only occasionally want permanent annotation (or
+vice versa).
