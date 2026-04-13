@@ -69,6 +69,16 @@ Interactively, using a prefix argument (C-u) toggles this behaviour:
                  (const :tag "Flash Region Only (No PDF mod)" flash)
                  (const :tag "No Highlight/Flash" nil)))
 
+(defcustom org-noter-rehighlight-link-color "#00CFFF"
+  "Color for link-based (pdf: link with edges) annotations."
+  :type 'string
+  :group 'org-noter)
+
+(defcustom org-noter-rehighlight-rectangle-color "#FF69B4"
+  "Color for rectangle-region (rect: prefix) annotations."
+  :type 'string
+  :group 'org-noter)
+
 (defun org-noter-pdf--pretty-print-highlight (highlight-info)
   (format "%s" highlight-info))
 
@@ -521,11 +531,18 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
            ;; Determine effective mode based on config and prefix arg
            (mode (if current-prefix-arg
                      (if org-noter-store-link-markup-annotation nil t)
-                   org-noter-store-link-markup-annotation)))
+                   org-noter-store-link-markup-annotation))
+           ;; decide on the annotation colour
+           (highlight-color (if is-rectangle
+                                org-noter-rehighlight-rectangle-color
+                              org-noter-rehighlight-link-color)))
 
       ;; A way to handle PDF annotation (i.e., if we set `org-noter-store-link-markup-annotation' to t)
       (when (and has-region (eq mode t))
-        (pdf-annot-add-highlight-markup-annotation (pdf-highlight-coords highlight)))
+        (let* ((annot (pdf-annot-add-highlight-markup-annotation
+                       (pdf-highlight-coords highlight))))
+          (when annot
+            (pdf-annot-put annot 'color highlight-color))))
 
       (let* ((link (if has-region
                        (let* ((coords (pdf-highlight-coords highlight))
