@@ -69,12 +69,12 @@ Interactively, using a prefix argument (C-u) toggles this behaviour:
                  (const :tag "Flash Region Only (No PDF mod)" flash)
                  (const :tag "No Highlight/Flash" nil)))
 
-(defcustom org-noter-rehighlight-link-color "#00CFFF"
+(defcustom org-noter-highlight-link-color "#00CFFF"
   "Color for link-based (pdf: link with edges) annotations."
   :type 'string
   :group 'org-noter)
 
-(defcustom org-noter-rehighlight-rectangle-color "#FF69B4"
+(defcustom org-noter-highlight-rectangle-color "#FF69B4"
   "Color for rectangle-region (rect: prefix) annotations."
   :type 'string
   :group 'org-noter)
@@ -534,8 +534,8 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
                    org-noter-store-link-markup-annotation))
            ;; decide on the annotation colour
            (highlight-color (if is-rectangle
-                                org-noter-rehighlight-rectangle-color
-                              org-noter-rehighlight-link-color)))
+                                org-noter-highlight-rectangle-color
+                              org-noter-highlight-link-color)))
 
       ;; A way to handle PDF annotation (i.e., if we set `org-noter-store-link-markup-annotation' to t)
       (when (and has-region (eq mode t))
