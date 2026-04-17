@@ -1469,10 +1469,10 @@ document property) will be opened."
                                                           point location view))
       (cdr hook-result))
      ((eq (aref view 0) 'paged)
-      (> (org-noter--get-location-top location) point))
+      (and point (> (org-noter--get-location-top location) point)))
      ((eq (aref view 0) 'nov)
-      (> (org-noter--get-location-top location) (+ (* point (- (cdr (aref view 2)) (cdr (aref view 1))))
-                                                   (cdr (aref view 1))))))))
+      (and point (> (org-noter--get-location-top location) (+ (* point (- (cdr (aref view 2)) (cdr (aref view 1))))
+                                                   (cdr (aref view 1)))))))))
 
 (defun org-noter--relative-position-to-view (location view)
   (cond
