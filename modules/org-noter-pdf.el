@@ -37,6 +37,34 @@
 (push "pdf" org-noter--doc-extensions)
 (cl-defstruct pdf-highlight page coords)
 
+(defcustom org-noter-pdf-screenshot-insert-style 'heading
+  "How to insert the screenshot link in the notes buffer.
+
+When set to `heading', a new Org heading is created via
+`org-noter-insert-note' and the file link is placed beneath it.
+
+When set to `link', the file link is inserted directly at point
+in the notes buffer with no preceding heading."
+  :type '(choice (const :tag "Insert under a new Org heading" heading)
+                 (const :tag "Insert as a plain link at point" link))
+  :group 'org-noter)
+
+(defcustom org-noter-pdf-screenshot-directory "org-noter-screenshots/"
+  "Default subdirectory (relative to the notes file) for saving PDF screenshots."
+  :type 'string
+  :group 'org-noter)
+
+(defcustom org-noter-pdf-screenshot-ask-before-save t
+  "Whether to prompt for a file path when saving a PDF screenshot.
+When non-nil (default), a `read-file-name' prompt is shown so
+the user can adjust the save location.
+
+When nil, the screenshot is saved directly to the default
+timestamped path under `org-noter-pdf-screenshot-directory'
+with no prompt."
+  :type 'boolean
+  :group 'org-noter)
+
 (defun org-noter-pdf--get-highlight ()
   "If there's an active pdf selection, returns a  that contains all
 the relevant info (page, coordinates)
@@ -477,6 +505,104 @@ v') for precise notes."
      dx dy)))
 
 (add-to-list 'org-noter--show-arrow-hook #'org-noter-pdf--show-arrow)
+
+(defun org-noter-pdf--generate-screenshot-path (notes-file-dir)
+  "Generate a default screenshot file path under NOTES-FILE-DIR."
+  (let* ((screenshot-dir (expand-file-name org-noter-pdf-screenshot-directory notes-file-dir))
+         (timestamp (format-time-string "%Y-%m-%d_%H%M%S"))
+         (filename (format "screenshot_%s.png" timestamp)))
+    (cons screenshot-dir (expand-file-name filename screenshot-dir))))
+
+(defun org-noter-pdf-save-screenshot ()
+  "Extract the active PDF region as an image, save it to disk, and
+insert an Org file link in the notes buffer.
+
+The user must first select a region in the PDF document buffer
+\(can be with either `pdf-view-set-region' or mouse selection\).
+
+By default the image is saved into an `org-noter-screenshots/'
+subdirectory next to the current notes file, with a timestamped
+filename.  When `org-noter-pdf-screenshot-ask-before-save' is
+non-nil a `read-file-name' prompt lets you adjust the path;
+otherwise the default path is used directly."
+  (interactive)
+  (org-noter--with-valid-session
+   (let* ((doc-buffer (org-noter--session-doc-buffer session))
+          (notes-buffer (org-noter--session-notes-buffer session))
+          (notes-file (buffer-file-name notes-buffer))
+          (notes-dir (if notes-file
+                         (file-name-directory notes-file)
+                       default-directory))
+          (default-path-pair (org-noter-pdf--generate-screenshot-path notes-dir))
+          (default-dir (car default-path-pair))
+          (default-file (cdr default-path-pair)))
+
+     ;; Validate pdf-view-active-region
+     (with-current-buffer doc-buffer
+       (unless (and (eq major-mode 'pdf-view-mode)
+                    (pdf-view-active-region-p))
+         (user-error "No active region in the PDF buffer.  Select a region first")))
+
+     (let* ((save-path (if org-noter-pdf-screenshot-ask-before-save
+                           (read-file-name "Save screenshot to: "
+                                           default-dir nil nil
+                                           (file-name-nondirectory default-file))
+                         default-file))
+            (save-dir (file-name-directory save-path)))
+
+       (make-directory save-dir t)
+
+       ;; extractions of img and saving to PC
+       (let ((temp-buffer (generate-new-buffer " *org-noter-screenshot*")))
+         (unwind-protect
+             (progn
+               (with-current-buffer doc-buffer
+                 (pdf-view-extract-region-image
+                  (pdf-view-active-region)
+                  (pdf-view-current-page)
+                  (pdf-view-image-size)
+                  temp-buffer
+                  t))
+               (with-current-buffer temp-buffer
+                 (let ((coding-system-for-write 'binary))
+                   (write-region (point-min) (point-max) save-path nil 'quiet)))
+               (with-current-buffer doc-buffer
+                 (pdf-view-deactivate-region)))
+           (when (buffer-live-p temp-buffer)
+             (kill-buffer temp-buffer))))
+
+       (let* ((relative-path (file-relative-name save-path notes-dir))
+              (link-text (format "[[file:%s]]" relative-path)))
+
+         (pcase org-noter-pdf-screenshot-insert-style
+           ('heading
+            ;; using `org-noter-insert-note' to create heading...
+            (let* ((location (org-noter--doc-approx-location 0))
+                   (page (car location))
+                   (title (format "Screenshot page %d" page))
+                   (org-noter-insert-note-no-questions t)
+                   (org-noter-default-heading-title title)
+                   ;; Prevent it from trying to use selected text as title!
+                   (org-noter-get-selected-text-hook nil)
+                   ;; We don't want to highlight anything as this will
+		   ;; be confusing
+		   ;; (see: https://github.com/org-noter/org-noter/pull/118)
+                   (org-noter-highlight-selected-text nil))
+
+              (org-noter-insert-note)
+
+              (with-current-buffer notes-buffer
+                (org-end-of-meta-data t)
+                (insert link-text "\n")
+                (org-show-set-visibility t)
+                (org-cycle-hide-drawers 'all))))
+
+           ('link
+            (with-current-buffer notes-buffer
+              (save-excursion
+                (insert link-text "\n")))))
+
+         (message "Saved screenshot to %s and inserted link." relative-path))))))
 
 (defun org-noter-pdf-set-columns (num-columns)
   "Interactively set the COLUMN_EDGES property for the current heading.
