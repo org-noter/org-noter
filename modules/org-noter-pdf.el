@@ -579,14 +579,16 @@ otherwise the default path is used directly."
             ;; using `org-noter-insert-note' to create heading...
             (let* ((location (org-noter--doc-approx-location 0))
                    (page (car location))
-                   (title (format "Screenshot page %d" page))
+                   (initial-input (format "Screenshot page %d" page))
+                   ;; Prompt user with pre-filled text they can edit
+                   (title (read-string "Note title: " initial-input))
                    (org-noter-insert-note-no-questions t)
                    (org-noter-default-heading-title title)
                    ;; Prevent it from trying to use selected text as title!
                    (org-noter-get-selected-text-hook nil)
-                   ;; We don't want to highlight anything as this will
-		   ;; be confusing
-		   ;; (see: https://github.com/org-noter/org-noter/pull/118)
+                   ;; NOTE(hnvy): We don't want to highlight
+                   ;; anything as this will be confusing
+                   ;; (see: https://github.com/org-noter/org-noter/pull/118)
                    (org-noter-highlight-selected-text nil))
 
               (org-noter-insert-note)
