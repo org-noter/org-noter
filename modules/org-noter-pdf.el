@@ -574,6 +574,12 @@ otherwise the default path is used directly."
        (let* ((relative-path (file-relative-name save-path notes-dir))
               (link-text (format "[[file:%s]]" relative-path)))
 
+         ;; NOTE(hnvy): useful to push to `org-stored-links' for later
+	     ;; use (should the user need it for other uses).
+         (push (list (format "file:%s" relative-path)
+                     (file-name-nondirectory relative-path))
+               org-stored-links)
+
          (pcase org-noter-pdf-screenshot-insert-style
            ('heading
             ;; using `org-noter-insert-note' to create heading...
@@ -588,7 +594,6 @@ otherwise the default path is used directly."
                    (org-noter-get-selected-text-hook nil)
                    ;; NOTE(hnvy): We don't want to highlight
                    ;; anything as this will be confusing
-                   ;; (see: https://github.com/org-noter/org-noter/pull/118)
                    (org-noter-highlight-selected-text nil))
 
               (org-noter-insert-note)
