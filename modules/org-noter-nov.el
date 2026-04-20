@@ -131,15 +131,19 @@
   (mapcar (lambda (li)
             (mapcar (lambda (a-or-ol)
                       (pcase-exhaustive (dom-tag a-or-ol)
-                        ('a
+                        ((or 'a 'span)
                          (vector :depth depth
-                                 :title (dom-text a-or-ol)
+                                 :title
+                                 (replace-regexp-in-string
+                                  "[ \t\n\r]+"
+                                  " "
+                                  (string-trim (dom-texts a-or-ol "")))
                                  :href (esxml-node-attribute 'href a-or-ol)))
                         ('ol
                          (org-noter-nov--handle-toc-item a-or-ol
                                                          (1+ depth)))))
-                    (dom-children li)))
-          (dom-children ol)))
+                    (dom-non-text-children li)))
+          (dom-non-text-children ol)))
 
 (defun org-noter-nov--create-skeleton-epub (mode)
   "Epub outline with nov link."
@@ -153,25 +157,42 @@
             output-data)
        (with-current-buffer (org-noter--session-doc-buffer session)
          (let* ((toc-path (cdr (aref nov-documents 0)))
+                (ncxp (version< nov-epub-version "3.0"))
+                (level (if ncxp 1 2))
                 (toc-tree (with-temp-buffer
-                            (insert (nov-ncx-to-html toc-path))
+                            (if ncxp
+                                (insert (nov-ncx-to-html toc-path))
+                              (insert-file-contents toc-path))
                             (goto-char (point-min))
                             (while (re-search-forward "\n" nil t)
                               (replace-match "" nil nil))
-                            (libxml-parse-html-region (point-min)
-                                                      (point-max))))
+                            (let ((root (libxml-parse-html-region (point-min)
+                                                                  (point-max))))
+                              (if ncxp
+                                  root
+                                (dom-child-by-tag
+                                 (car
+                                  (dom-search root
+                                              (lambda (node)
+                                                (and (eq (dom-tag node) 'nav)
+                                                     (string= (dom-attr node
+                                                                        'epub:type)
+                                                              "toc")))))
+                                 'ol)))))
                 (origin-index nov-documents-index)
                 (origin-point (point)))
            (dolist (item
-                    (nreverse (flatten-tree (org-noter-nov--handle-toc-item toc-tree 1))))
-             (let ((relative-level  (aref item 1))
-                   (title  (aref item 3))
-                   (url (aref item 5)))
-               (apply 'nov-visit-relative-file
-                      (nov-url-filename-and-target url))
-               (when (not (integerp nov-documents-index))
-                 (setq nov-documents-index 0))
-               (push (vector title (list nov-documents-index (point)) relative-level) output-data)))
+                    (nreverse (flatten-tree (org-noter-nov--handle-toc-item toc-tree level))))
+             (let* ((relative-level  (aref item 1))
+                    (title  (aref item 3))
+                    (url (aref item 5))
+                    (location (when url
+                                (apply 'nov-visit-relative-file
+                                       (nov-url-filename-and-target url))
+                                (when (not (integerp nov-documents-index))
+                                  (setq nov-documents-index 0))
+                                (cons nov-documents-index (point)))))
+               (push (vector title location relative-level) output-data)))
            (push (vector "Skeleton" (list 0) 1) output-data)
 
            (nov-goto-document origin-index)
