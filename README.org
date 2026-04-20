@@ -139,6 +139,10 @@ The official repo for this package is https://github.com/org-noter/org-noter/tre
       sessions directly from ~dired~.  Opens all marked files or the file at
       point if none are marked.
 
+    - ~org-noter-{next,prev}-page-from-notes~ :: Navigate document without leaving the notes buffer
+
+    - ~org-noter-insert-note-from-notes~ :: Insert note from notes window
+
 *** new (PDFs only with the [[https://github.com/vedang/pdf-tools][pdftools]] package)
     - 2D precise notes :: ([[https://github.com/ahmed-shariff/org-noter][Ahmed Shariff]]) Location tooltip appears at start of
       selected text or point of click.

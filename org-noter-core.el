@@ -2567,6 +2567,35 @@ synchronization features."
   (advice-remove 'dired-rename-file 'org-noter--update-doc-rename-in-notes)
   (advice-remove 'dired-rename-file 'org-noter--update-notes-rename-in-notes))
 
+(defun org-noter-next-page-from-notes ()
+  "Flip to the next page on document from notes buffer"
+  (interactive)
+  (org-noter--with-valid-session
+   (with-selected-window (org-noter--get-doc-window)
+     (cl-case major-mode
+              (pdf-view-mode (pdf-view-next-page-command))
+              (doc-view-mode (doc-view-next-line-or-next-page))
+              (djvu-read-mode (djvu-next-page 1))
+              (nov-mode (nov-scroll-up nil))))))
+
+(defun org-noter-prev-page-from-notes ()
+  "Flip to the previous page on document from notes buffer"
+  (interactive)
+  (org-noter--with-valid-session
+   (with-selected-window  (org-noter--get-doc-window)
+     (cl-case major-mode
+              (pdf-view-mode (pdf-view-previous-page-command))
+              (doc-view-mode (doc-view-previous-line-or-previous-page))
+              (djvu-read-mode (djvu-prev-page 1))
+              (nov-mode (nov-scroll-down nil))))))
+
+(defun org-noter-insert-note-from-notes ()
+  "Insert a note at current page from notes buffer"
+  (interactive)
+  (org-noter--with-valid-session
+   (with-selected-window (org-noter--get-doc-window)
+     (org-noter-insert-note))))
+
 (define-minor-mode org-noter-doc-mode
   "Minor mode for the document buffer.
 Keymap:
