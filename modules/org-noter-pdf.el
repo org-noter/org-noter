@@ -50,6 +50,35 @@ Otherwise returns nil"
 
 (add-to-list 'org-noter--get-highlight-location-hook 'org-noter-pdf--get-highlight)
 
+(defcustom org-noter-pdf-store-link-markup-annotation nil
+  "Control the highlighting behaviour when storing a link to a PDF region.
+
+This variable accepts three values:
+- t       : Add a permanent highlight annotation to the PDF file.
+            The link will also contain the region coordinates for robustness.
+- 'flash  : Do NOT modify the PDF file. Instead, store the region coordinates
+            inside the link itself. The region will flash when the link is opened.
+- nil     : Do not annotate the PDF and do not store region coordinates.
+            The link points to the location, but no flashing occurs.
+
+Interactively, using a prefix argument (C-u) toggles this behaviour:
+- If currently non-nil (t or 'flash), it forces behaviour to nil (off).
+- If currently nil, it forces behaviour to t (annotate)."
+  :group 'org-noter-insertion
+  :type '(choice (const :tag "Annotate PDF (Permanent)" t)
+                 (const :tag "Flash Region Only (No PDF mod)" flash)
+                 (const :tag "No Highlight/Flash" nil)))
+
+(defcustom org-noter-pdf-highlight-link-color "#00CFFF"
+  "Color for link-based (pdf: link with edges) annotations."
+  :type 'string
+  :group 'org-noter)
+
+(defcustom org-noter-pdf-highlight-rectangle-color "#FF69B4"
+  "Color for rectangle-region (rect: prefix) annotations."
+  :type 'string
+  :group 'org-noter)
+
 (defun org-noter-pdf--pretty-print-highlight (highlight-info)
   (format "%s" highlight-info))
 
@@ -141,7 +170,7 @@ original pretty-print function."
   (when (eq mode 'pdf-view-mode)
     (let (v-position h-position)
       (if (and (pdf-view-active-region-p)
-	       (cadr (pdf-view-active-region))) ; ensure the edges are ACTUALLY populated (needed for pdf-tools v1.3.0)
+           (cadr (pdf-view-active-region))) ; ensure the edges are ACTUALLY populated (needed for pdf-tools v1.3.0)
           (let ((edges (cadr (pdf-view-active-region))))
             (setq v-position (min (nth 1 edges) (nth 3 edges))
                   h-position (min (nth 0 edges) (nth 2 edges))))
@@ -478,6 +507,224 @@ v') for precise notes."
 
 (add-to-list 'org-noter--show-arrow-hook #'org-noter-pdf--show-arrow)
 
+(defun org-noter-pdf-store-highlight-link ()
+  "Store a link to the current location in the PDF.
+Behaviour depends on `org-noter-pdf-store-link-markup-annotation':
+- t:      Annotates PDF AND stores coordinates in link.
+- 'flash: Stores coordinates in link for transient flashing (no PDF mod).
+- nil:    No annotation or flashing.
+
+Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
+  (when (eq major-mode 'pdf-view-mode)
+    (let* ((file-path (buffer-file-name))
+           (highlight (org-noter-pdf--get-highlight))
+           ;; NOTE(hnvy): we must use cdr here due to pdf-tools update 1.3.0
+           ;; Since that update, `pdf-view-active-region' now returns
+           ;; page information along with coordination. But, ~cdr~ may
+           ;; not be needed if we modify `org-noter-pdf--get-highlight' function to account for this?
+           (has-region (and highlight
+                            (pdf-highlight-coords highlight)
+                            (cdr (pdf-highlight-coords highlight))))
+           (page (if has-region
+                     (pdf-highlight-page highlight)
+                   (pdf-view-current-page)))
+           ;; Detect if this is a rectangle selection
+           (is-rectangle (and has-region
+                              (bound-and-true-p pdf-view--have-rectangle-region)))
+           ;; Determine effective mode based on config and prefix arg
+           (mode (if current-prefix-arg
+                     (if org-noter-pdf-store-link-markup-annotation nil t)
+                   org-noter-pdf-store-link-markup-annotation))
+           ;; decide on the annotation colour
+           (highlight-color (if is-rectangle
+                                org-noter-pdf-highlight-rectangle-color
+                              org-noter-pdf-highlight-link-color)))
+
+            ;; A way to handle PDF annotation (i.e., if we set `org-noter-pdf-store-link-markup-annotation' to t)
+      (when (and has-region (eq mode t))
+        (let* ((annot (pdf-annot-add-highlight-markup-annotation
+                       (pdf-highlight-coords highlight))))
+          (when annot
+            (pdf-annot-put annot 'color highlight-color))))
+
+      (let* ((link (if has-region
+                       (let* ((coords (pdf-highlight-coords highlight))
+                              (region (cadr coords))
+                              (h (nth 0 region)) ; x1
+                              (v (nth 1 region)) ; y1
+                              ;; Storing the edges of the highlight (i.e., if we set `org-noter-pdf-store-link-markup-annotation' to 'flash OR t)
+                              (edges-str (if mode
+                                             (mapconcat (lambda (r)
+                                                          (mapconcat (lambda (n) (format "%.3f" n)) r " "))
+                                                        (cdr coords) " ")
+                                           nil))
+                              ;; Add a "rect:" prefix to edges if rectangle
+                              (edges-str (when edges-str
+                                           (if is-rectangle
+                                               (concat "rect:" edges-str)
+                                             edges-str))))
+                         (if edges-str
+                             (format "pdf:%s::(%d %.3f . %.3f %s)" file-path page v h edges-str)
+                           (format "pdf:%s::(%d %.3f . %.3f)" file-path page v h)))
+                     (format "pdf:%s::%d" file-path page)))
+             ;; For rectangle selections, don't use the text as description
+             (raw-text (when (and has-region (not is-rectangle))
+                         (mapconcat #'identity (pdf-view-active-region-text) " ")))
+             (clean-text (when raw-text
+                           (string-trim (replace-regexp-in-string "[[:space:]\n\r]+" " " raw-text))))
+             (max-len (if (boundp 'org-noter-max-short-selected-text-length)
+                          org-noter-max-short-selected-text-length
+                        80))
+             (default-title (let ((template (if (boundp 'org-noter-default-heading-title)
+                                                org-noter-default-heading-title
+                                              "Notes for page $p$")))
+                              (replace-regexp-in-string (regexp-quote "$p$")
+                                                        (number-to-string page)
+                                                        template t t)))
+             (description (cond
+                           (is-rectangle
+                            (format "Rectangle on page %d" page))
+                           ((and clean-text (<= (length clean-text) max-len))
+                            clean-text)
+                           (t default-title))))
+
+        (org-link-store-props
+         :type "pdf"
+         :link link
+         :description description)
+
+        link))))
+
+;; Scroll vertically only
+  ;; NOTE(hnvy): Unsure if a horizontal scroll would also be useful? Doesn't seem
+  ;; to be present in the default behaviour.
+(defun org-noter-pdf--goto-precise-link-location (page v h &optional edges is-rectangle)
+  "Go to PAGE, scroll to relative coordinate V, and flash matching annotation or EDGES.
+If IS-RECTANGLE is non-nil, display the region as a rectangle."
+  (when (and org-noter--arrow-location
+             (vectorp org-noter--arrow-location)
+             (> (length org-noter--arrow-location) 0)
+             (not (timerp (aref org-noter--arrow-location 0))))
+    (setq org-noter--arrow-location nil))
+
+  (org-noter-pdf--goto-location 'pdf-view-mode (cons page (cons v h)) (selected-window))
+
+  (if edges
+      ;; If our link contains explicit edges (i.e., if we had set `org-noter-pdf-store-link-markup-annotation' to 'flash OR t).
+      ;; Also check if our link is a rectangle
+      (pdf-view-display-region (cons page edges) is-rectangle)
+
+    ;; What to do if there are no edges
+    (let ((annots (pdf-info-getannots page)))
+      (catch 'found-annot
+        (dolist (annot annots)
+          (let ((type (alist-get 'type annot))
+                (annot-edges (alist-get 'edges annot)))
+            (when (eq type 'highlight)
+              ;; Ensure edges is a list of regions
+              (when (numberp (car annot-edges))
+                (setq annot-edges (list annot-edges)))
+              (dolist (r annot-edges)
+                (when (and (>= (+ h 0.01) (nth 0 r))
+                           (<= (- h 0.01) (nth 2 r))
+                           (>= (+ v 0.01) (nth 1 r))
+                           (<= (- v 0.01) (nth 3 r)))
+                  ;; FLASH!!!
+                  (pdf-view-display-region (cons page annot-edges))
+                  (throw 'found-annot t))))))))))
+
+(defun org-noter-pdf--link-open (link)
+  "Open a PDF link, handling the custom (page v . h [edges]) format."
+  (let* ((parts (split-string link "::"))
+         (path (car parts))
+         (option (cadr parts))
+         (precise (and option
+                       (string-match
+                        "^(\\([0-9]+\\)[[:space:]]+\\([0-9.]+\\)[[:space:]]*\\.[[:space:]]*\\([0-9.]+\\)\\(?:[[:space:]]+\\(\\(?:rect:\\)?[0-9. ]+\\)\\)?)$"
+                        option)))
+         (page (cond
+                (precise (string-to-number (match-string 1 option)))
+                ((and option (string-match-p "^[0-9]+$" option))
+                 (string-to-number option))
+                (t nil)))
+         (v (when precise (string-to-number (match-string 2 option))))
+         (h (when precise (string-to-number (match-string 3 option))))
+         (raw-edges-str (when precise (match-string 4 option)))
+         ;; Detect rectangle flag
+         (is-rectangle (and raw-edges-str (string-prefix-p "rect:" raw-edges-str)))
+         (edges-str (when raw-edges-str
+                      (if is-rectangle
+                          (substring raw-edges-str 5) ; strip "rect:"
+                        raw-edges-str)))
+         (edges (when edges-str
+                  (let ((nums (mapcar #'string-to-number (split-string edges-str)))
+                        result)
+                    (while nums
+                      (push (list (pop nums) (pop nums) (pop nums) (pop nums)) result))
+                    (nreverse result)))))
+
+    (let ((doc-window (and (boundp 'org-noter--session)
+                           org-noter--session
+                           (org-noter--get-doc-window))))
+      (if doc-window
+          (progn
+            (let ((location (if (and page v h)
+                                (cons page (cons v h))
+                              (when page (cons page 0)))))
+              (when location
+                (org-noter--doc-goto-location location)))
+
+            (select-frame-set-input-focus (window-frame doc-window))
+            (select-window doc-window)
+
+            (when (and edges page)
+              (pdf-view-display-region (cons page edges) is-rectangle)))
+
+        ;; fallback
+        (let* ((clean-path (expand-file-name path))
+               (buf (find-file-noselect clean-path))
+               (win (get-buffer-window buf)))
+          (if win
+              (select-window win)
+            (switch-to-buffer-other-window buf))
+
+          (when page
+            (if (and v h)
+                (org-noter-pdf--goto-precise-link-location page v h edges is-rectangle)
+              (pdf-view-goto-page page))))))))
+
+(defun org-noter-pdf--link-export (link description format)
+  "Export the custom PDF LINK with DESCRIPTION for FORMAT.
+Converts the custom (page v . h) format into standard
+HTML #page=N links to make inline `org-noter' links usable in browsers."
+  (let* ((parts (split-string link "::"))
+         (raw-path (car parts))
+         (option (cadr parts))
+         ;; Extract page number from the option string
+         (page (cond
+                ((and option (string-match "^(\\([0-9]+\\)" option))
+                 (match-string 1 option))
+                ((and option (string-match "^[0-9]+$" option))
+                 option)
+                (t "1")))
+         ;; escpe the path and ensure it's relative for export
+         (path (if (fboundp 'org-export-file-uri)
+                   (org-export-file-uri (org-link-escape raw-path))
+                 raw-path)))
+    (cond
+     ((eq format 'html)
+      (format "<a href=\"%s#page=%s\">%s</a>"
+              path
+              page
+              (or description path)))
+     ;; fallback
+     (t (if description (format "%s (%s)" description path) path)))))
+
+(org-link-set-parameters "pdf"
+  :follow 'org-noter-pdf--link-open
+  :store 'org-noter-pdf-store-highlight-link
+  :export 'org-noter-pdf--link-export)
+
 (defun org-noter-pdf-set-columns (num-columns)
   "Interactively set the COLUMN_EDGES property for the current heading.
 NUM-COLUMNS can be given as an integer prefix or in the
@@ -519,6 +766,8 @@ current heading inherit the COLUMN_EDGES property."
       (select-window (org-noter--get-notes-window))
       (execute-kbd-macro
        (vconcat (kbd "C-c C-x") this-CxCc-cmd)))))
+
+(define-key pdf-view-mode-map (kbd "C-c l") 'org-store-link)
 
 (provide 'org-noter-pdf)
 ;;; org-noter-pdf.el ends here
