@@ -170,7 +170,7 @@ original pretty-print function."
   (when (eq mode 'pdf-view-mode)
     (let (v-position h-position)
       (if (and (pdf-view-active-region-p)
-	       (cadr (pdf-view-active-region))) ; ensure the edges are ACTUALLY populated (needed for pdf-tools v1.3.0)
+           (cadr (pdf-view-active-region))) ; ensure the edges are ACTUALLY populated (needed for pdf-tools v1.3.0)
           (let ((edges (cadr (pdf-view-active-region))))
             (setq v-position (min (nth 1 edges) (nth 3 edges))
                   h-position (min (nth 0 edges) (nth 2 edges))))
@@ -535,7 +535,7 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
            (mode (if current-prefix-arg
                      (if org-noter-pdf-store-link-markup-annotation nil t)
                    org-noter-pdf-store-link-markup-annotation))
-		   ;; decide on the annotation colour
+           ;; decide on the annotation colour
            (highlight-color (if is-rectangle
                                 org-noter-pdf-highlight-rectangle-color
                               org-noter-pdf-highlight-link-color)))
@@ -611,7 +611,7 @@ If IS-RECTANGLE is non-nil, display the region as a rectangle."
 
   (if edges
       ;; If our link contains explicit edges (i.e., if we had set `org-noter-pdf-store-link-markup-annotation' to 'flash OR t).
-	  ;; Also check if our link is a rectangle
+      ;; Also check if our link is a rectangle
       (pdf-view-display-region (cons page edges) is-rectangle)
 
     ;; What to do if there are no edges
