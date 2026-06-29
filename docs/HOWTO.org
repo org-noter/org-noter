@@ -115,6 +115,10 @@ Choose your preferred default by adding ONE of these to your config:
 - Press ~C-c l~
 - Come back to your notes file and press ~C-c C-l~ to paste it
 
+*** Demo videos
+- Here is a [[Demo/Media/annotate.mp4][demo video]] of =t=.
+- And here is [[Demo/Media/flash.mp4][one]] of ='flash=.
+
 *** On-fly behaviour change
 You don't have to change your config to switch modes temporarily.
 Use a *prefix argument* (ie ~C-u C-c l~) when storing the link:
