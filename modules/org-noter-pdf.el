@@ -38,10 +38,11 @@
 (cl-defstruct pdf-highlight page coords)
 
 (defun org-noter-pdf--get-highlight ()
-  "If there's an active pdf selection, returns a  that contains all
-the relevant info (page, coordinates)
+  "Get pdf selection coordinates.
 
-Otherwise returns nil"
+If there's an active pdf selection, return a PDF-HIGHLIGHT struct that
+contains all the relevant info (page, coordinates), otherwise return
+nil."
     (if-let* ((_ (pdf-view-active-region-p))
                (page (image-mode-window-get 'page))
                (coords (pdf-view-active-region)))
@@ -53,17 +54,15 @@ Otherwise returns nil"
 (defcustom org-noter-pdf-store-link-markup-annotation nil
   "Control the highlighting behaviour when storing a link to a PDF region.
 
-This variable accepts three values:
-- t       : Add a permanent highlight annotation to the PDF file.
-            The link will also contain the region coordinates for robustness.
-- 'flash  : Do NOT modify the PDF file. Instead, store the region coordinates
-            inside the link itself. The region will flash when the link is opened.
-- nil     : Do not annotate the PDF and do not store region coordinates.
-            The link points to the location, but no flashing occurs.
-
-Interactively, using a prefix argument (C-u) toggles this behaviour:
-- If currently non-nil (t or 'flash), it forces behaviour to nil (off).
-- If currently nil, it forces behaviour to t (annotate)."
+This variable is used by `org-noter-pdf-store-highlight-link' and accepts three
+values:
+- t      : Add a permanent highlight annotation to the PDF file.
+           The link will also contain the region coordinates for robustness.
+- \\='flash : Do NOT modify the PDF file.  Instead, store the region
+           coordinates inside the link itself.  The region will flash
+           when the link is opened.
+- nil    : Do not annotate the PDF and do not store region coordinates.
+           The link points to the location, but no flashing occurs."
   :group 'org-noter-insertion
   :type '(choice (const :tag "Annotate PDF (Permanent)" t)
                  (const :tag "Flash Region Only (No PDF mod)" flash)
@@ -509,12 +508,15 @@ v') for precise notes."
 
 (defun org-noter-pdf-store-highlight-link ()
   "Store a link to the current location in the PDF.
+
 Behaviour depends on `org-noter-pdf-store-link-markup-annotation':
 - t:      Annotates PDF AND stores coordinates in link.
-- 'flash: Stores coordinates in link for transient flashing (no PDF mod).
+- \\='flash: Stores coordinates in link for transient flashing (no PDF mod).
 - nil:    No annotation or flashing.
 
-Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
+Interactively, using a prefix argument \\[universal-argument] toggles this behaviour:
+- If currently non-nil (t or \\='flash), it forces behaviour to nil (off).
+- If currently nil, it forces behaviour to t (annotate)."
   (when (eq major-mode 'pdf-view-mode)
     (let* ((file-path (buffer-file-name))
            (highlight (org-noter-pdf--get-highlight))
@@ -599,7 +601,7 @@ Prefix arg (C-u) toggles the behaviour (Non-nil -> Nil; Nil -> T)."
   ;; NOTE(hnvy): Unsure if a horizontal scroll would also be useful? Doesn't seem
   ;; to be present in the default behaviour.
 (defun org-noter-pdf--goto-precise-link-location (page v h &optional edges is-rectangle)
-  "Go to PAGE, scroll to relative coordinate V, and flash matching annotation or EDGES.
+  "Go to PAGE, scroll to coordinate (V,H), and flash matching annotation or EDGES.
 If IS-RECTANGLE is non-nil, display the region as a rectangle."
   (when (and org-noter--arrow-location
              (vectorp org-noter--arrow-location)
@@ -634,7 +636,7 @@ If IS-RECTANGLE is non-nil, display the region as a rectangle."
                   (throw 'found-annot t))))))))))
 
 (defun org-noter-pdf--link-open (link)
-  "Open a PDF link, handling the custom (page v . h [edges]) format."
+  "Open a PDF LINK, handling the custom (page v . h [edges]) format."
   (let* ((parts (split-string link "::"))
          (path (car parts))
          (option (cadr parts))
