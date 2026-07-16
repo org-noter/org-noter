@@ -769,7 +769,7 @@ current heading inherit the COLUMN_EDGES property."
       (execute-kbd-macro
        (vconcat (kbd "C-c C-x") this-CxCc-cmd)))))
 
-(define-key pdf-view-mode-map (kbd "C-c l") 'org-store-link)
+(define-key org-noter-doc-mode-map (kbd "C-c l") 'org-store-link)
 
 (provide 'org-noter-pdf)
 ;;; org-noter-pdf.el ends here
