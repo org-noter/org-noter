@@ -145,12 +145,25 @@ notes that are not annotating the current page."
   :type 'boolean)
 
 (defcustom org-noter-always-create-frame t
-  "Create a new frame for each document session.
-When non-nil, org-noter will always create a new frame for the
-session.  When nil, it will use the selected frame if it does not
-belong to any other session."
+  "Whether to open each document session in its own frame.
+
+Possible values:
+
+- t              Always create a new, maximized frame for the
+                 session.  This is the default.
+
+- nil            Never create a new frame: reuse the selected frame,
+                 setting up the document and notes windows within it,
+                 even when it already hosts another session.
+
+- `reuse-if-free'  Reuse the selected frame only when it does not
+                 already belong to another org-noter session;
+                 otherwise create a new frame.  This was the
+                 historical behavior of the nil setting."
   :group 'org-noter
-  :type 'boolean)
+  :type '(choice (const :tag "Always create a new frame" t)
+                 (const :tag "Always reuse the selected frame" nil)
+                 (const :tag "Reuse the selected frame only if free" reuse-if-free)))
 
 (defcustom org-noter-disable-narrowing nil
   "Disable narrowing in notes/org buffer."
@@ -693,11 +706,16 @@ Otherwise return the maximum value for point."
            :id (org-noter--get-new-id)
            :display-name display-name
            :frame
-           (if (or org-noter-always-create-frame
-                   (catch 'has-session
-                     (dolist (test-session org-noter--sessions)
-                       (when (eq (org-noter--session-frame test-session) (selected-frame))
-                         (throw 'has-session t)))))
+           (if (pcase org-noter-always-create-frame
+                 ('reuse-if-free
+                  ;; Historical nil behavior: reuse the selected frame
+                  ;; unless it already belongs to another session.
+                  (catch 'has-session
+                    (dolist (test-session org-noter--sessions)
+                      (when (eq (org-noter--session-frame test-session) (selected-frame))
+                        (throw 'has-session t)))))
+                 ;; t means always create; nil means always reuse.
+                 (create-new-frame create-new-frame))
                (make-frame `((name . ,frame-name) (fullscreen . maximized)))
              (set-frame-parameter nil 'name frame-name)
              (selected-frame))
