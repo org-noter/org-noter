@@ -47,8 +47,8 @@
                         (with-mock-contents
                          mock-contents-simple-notes-file-with-a-single-note
                          (lambda ()
-                           (setq org-noter-always-create-frame t)
-                           (let ((org-noter--sessions nil))
+                           (let ((org-noter-always-create-frame t)
+                                 (org-noter--sessions nil))
                              (org-noter-core-test-create-session)
                              (expect 'make-frame :to-have-been-called))))))
 
@@ -61,11 +61,11 @@
                         (with-mock-contents
                          mock-contents-simple-notes-file-with-a-single-note
                          (lambda ()
-                           (setq org-noter-always-create-frame nil)
                            ;; Pretend the selected frame is already busy with a
                            ;; stand-in session.  `:id' must be a number so
                            ;; `org-noter--get-new-id' can compare against it.
-                           (let ((org-noter--sessions
+                           (let ((org-noter-always-create-frame nil)
+                                 (org-noter--sessions
                                   (list (make-org-noter--session
                                          :id 0 :frame (selected-frame)))))
                              (org-noter-core-test-create-session)
@@ -79,8 +79,8 @@
                         (with-mock-contents
                          mock-contents-simple-notes-file-with-a-single-note
                          (lambda ()
-                           (setq org-noter-always-create-frame 'reuse-if-free)
-                           (let ((org-noter--sessions nil))
+                           (let ((org-noter-always-create-frame 'reuse-if-free)
+                                 (org-noter--sessions nil))
                              (org-noter-core-test-create-session)
                              (expect 'make-frame :not :to-have-been-called)
                              (expect (org-noter--session-frame org-noter--session)
@@ -90,14 +90,16 @@
                         (with-mock-contents
                          mock-contents-simple-notes-file-with-a-single-note
                          (lambda ()
-                           (setq org-noter-always-create-frame 'reuse-if-free)
                            ;; A stand-in session already owns the frame.  `:id'
                            ;; must be a number so `org-noter--get-new-id' can
                            ;; compare against it.
-                           (let ((org-noter--sessions
+                           (let ((org-noter-always-create-frame 'reuse-if-free)
+                                 (org-noter--sessions
                                   (list (make-org-noter--session
                                          :id 0 :frame (selected-frame)))))
                              (org-noter-core-test-create-session)
+                             (expect 'make-frame :to-have-been-called))))))
+
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           (describe "the prefix-0 toggle in `org-noter'"
                     ;; C-u 0 M-x org-noter inverts the frame outcome for one
