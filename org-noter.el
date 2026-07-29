@@ -83,7 +83,9 @@ even if the current heading annotates one.
 
 With a prefix number ARG:
 - Greater than 0: Open the document like `find-file'
--     Equal to 0: Create session with `org-noter-always-create-frame' toggled
+-     Equal to 0: Create session with the frame preference inverted:
+                  reuse the selected frame if `org-noter-always-create-frame'
+                  is t, otherwise force a new frame
 -    Less than 0: Open the folder containing the document
 
 - Creating the session from the document
@@ -110,7 +112,10 @@ notes file, even if it finds one."
                                (equal arg '(16))))
            (org-noter-always-create-frame
             (if (and (numberp arg) (= arg 0))
-                (not org-noter-always-create-frame)
+                ;; Invert the frame outcome for this session: t (always
+                ;; create) becomes nil (always reuse), while nil and
+                ;; `reuse-if-free' force a new frame.
+                (if (eq org-noter-always-create-frame t) nil t)
               org-noter-always-create-frame))
            (ast (org-noter--parse-root (vector (current-buffer) document-property)))
            (session-id (get-text-property (org-element-property :begin ast) org-noter--id-text-property))

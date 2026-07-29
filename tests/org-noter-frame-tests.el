@@ -98,4 +98,34 @@
                                   (list (make-org-noter--session
                                          :id 0 :frame (selected-frame)))))
                              (org-noter-core-test-create-session)
+          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+          (describe "the prefix-0 toggle in `org-noter'"
+                    ;; C-u 0 M-x org-noter inverts the frame outcome for one
+                    ;; session: t becomes nil (reuse the selected frame),
+                    ;; while nil and reuse-if-free force a new frame.
+                    (it "reuses the selected frame when the setting is t"
+                        (with-mock-contents
+                         mock-contents-simple-notes-file-with-a-single-note
+                         (lambda ()
+                           (let ((org-noter-always-create-frame t)
+                                 (org-noter--sessions nil))
+                             (org-noter 0)
+                             (expect 'make-frame :not :to-have-been-called)))))
+
+                    (it "forces a new frame when the setting is nil"
+                        (with-mock-contents
+                         mock-contents-simple-notes-file-with-a-single-note
+                         (lambda ()
+                           (let ((org-noter-always-create-frame nil)
+                                 (org-noter--sessions nil))
+                             (org-noter 0)
+                             (expect 'make-frame :to-have-been-called)))))
+
+                    (it "forces a new frame when the setting is reuse-if-free"
+                        (with-mock-contents
+                         mock-contents-simple-notes-file-with-a-single-note
+                         (lambda ()
+                           (let ((org-noter-always-create-frame 'reuse-if-free)
+                                 (org-noter--sessions nil))
+                             (org-noter 0)
                              (expect 'make-frame :to-have-been-called)))))))
