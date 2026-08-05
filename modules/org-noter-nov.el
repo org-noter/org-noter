@@ -1,8 +1,8 @@
 ;;; org-noter-nov.el --- Integration with Nov.el     -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2022  c1-g
+;; Copyright (C) 2022  c1-g, 2024  Myers Studio Ltd.
 
-;; Author: c1-g <char1iegordon@protonmail.com>
+;; Author: c1-g <char1iegordon@protonmail.com>, Rhea Myers <rhea@myers.studio>
 ;; Keywords: multimedia
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -88,7 +88,10 @@
 (defun org-noter-nov--get-precise-info (mode window)
   (when (eq mode 'nov-mode)
     (if (region-active-p)
-        (cons (mark) (point))
+        (let ((from (mark))
+              (to (point)))
+          ;; If mark was after point, make sure we reverse them.
+          (cons (min from to) (max from to)))
       (let ((event nil))
         (while (not (and (eq 'mouse-1 (car event))
                          (eq window (posn-window (event-start event)))))
