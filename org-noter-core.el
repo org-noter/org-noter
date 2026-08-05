@@ -371,6 +371,13 @@ With \"/\", \"The_Title\" would become \"/The_Title/\"."
   :type 'string
   :version "28.2")
 
+(defcustom org-noter-focus-doc-after-note-navigation t
+  "Focus behavior.
+When non-nil, automatically focus the document window after moving
+between notes. When nil, leave focus in current window."
+  :group 'org-noter-navigation
+  :type 'boolean)
+
 (defface org-noter-no-notes-exist-face
   '((t
      :foreground "chocolate"
@@ -2522,7 +2529,8 @@ As such, it will only work when the notes window exists."
            (org-noter--doc-goto-location (org-noter--parse-location-property previous))
            (org-noter--focus-notes-region (org-noter--make-view-info-for-single-note session previous)))
        (user-error "There is no previous note"))))
-  (select-window (org-noter--get-doc-window)))
+  (when org-noter-focus-doc-after-note-navigation
+    (select-window (org-noter--get-doc-window))))
 
 (defun org-noter-sync-current-note ()
   "Go the location of the selected note, in relation to where the point is.
@@ -2537,9 +2545,10 @@ As such, it will only work when the notes window exists."
              (org-noter--doc-goto-location location)
            (user-error "No note selected")))
      (user-error "You are inside a different document")))
-  (let ((window (org-noter--get-doc-window)))
-    (select-frame-set-input-focus (window-frame window))
-    (select-window window)))
+  (when org-noter-focus-doc-after-note-navigation
+    (let ((window (org-noter--get-doc-window)))
+      (select-frame-set-input-focus (window-frame window))
+      (select-window window))))
 
 (defun org-noter-sync-next-note ()
   "Go to the location of the next note, in relation to where the point is.
@@ -2561,7 +2570,8 @@ As such, it will only work when the notes window exists."
            (org-noter--doc-goto-location (org-noter--parse-location-property next))
            (org-noter--focus-notes-region (org-noter--make-view-info-for-single-note session next)))
        (user-error "There is no next note"))))
-  (select-window (org-noter--get-doc-window)))
+  (when org-noter-focus-doc-after-note-navigation
+    (select-window (org-noter--get-doc-window))))
 
 (defun org-noter-enable-update-renames ()
   "Enable `dired-rename-file' advice for moving docs and notes.
